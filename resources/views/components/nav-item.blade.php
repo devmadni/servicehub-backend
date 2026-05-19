@@ -15,11 +15,16 @@ $icons = [
 @endphp
 
 <a href="{{ $href }}" {{ $external ? 'target=_blank rel=noopener' : '' }}
-   class="group flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150
-          {{ $active
-              ? 'bg-teal-500/15 text-teal-300'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
-    <svg class="w-[15px] h-[15px] flex-shrink-0 {{ $active ? 'text-teal-400' : 'text-slate-500 group-hover:text-slate-300' }}"
+   class="group flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150"
+   style="{{ $active
+       ? 'background: rgba(45,212,191,0.15); color: #2DD4BF;'
+       : 'color: rgba(213,245,240,0.55);' }}"
+   @if(!$active)
+   onmouseover="this.style.background='rgba(255,255,255,0.08)'; this.style.color='rgba(213,245,240,0.9)';"
+   onmouseout="this.style.background='transparent'; this.style.color='rgba(213,245,240,0.55)';"
+   @endif>
+    <svg class="w-[15px] h-[15px] flex-shrink-0"
+         style="{{ $active ? 'color: #2DD4BF;' : 'color: rgba(213,245,240,0.4);' }}"
          fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         {!! $icons[$icon] ?? $icons['grid'] !!}
     </svg>
@@ -30,6 +35,6 @@ $icons = [
         </svg>
     @endif
     @if($active)
-        <span class="ml-auto w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+        <span class="ml-auto w-1.5 h-1.5 rounded-full" style="background: #2DD4BF;"></span>
     @endif
 </a>

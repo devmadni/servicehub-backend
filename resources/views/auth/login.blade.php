@@ -4,12 +4,12 @@
 @section('content')
 <div>
     <div class="mb-8">
-        <h1 class="text-2xl font-bold text-slate-900">Welcome back</h1>
-        <p class="text-sm text-slate-500 mt-1">Sign in to your ServiceHub account</p>
+        <h1 class="text-2xl font-bold" style="color: #0B1220;">Welcome back</h1>
+        <p class="text-sm mt-1" style="color: #6B6B70;">Sign in to your ServiceHub account</p>
     </div>
 
     @if($errors->any())
-        <div class="mb-5 p-3.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+        <div class="mb-5 p-3.5 rounded-xl text-sm" style="background: #FEF2F2; border: 1px solid rgba(217,79,61,0.25); color: #B91C1C;">
             {{ $errors->first() }}
         </div>
     @endif
@@ -18,52 +18,67 @@
         @csrf
 
         <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Email</label>
+            <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #6B6B70;">Email</label>
             <input type="email" name="email" value="{{ old('email') }}" required autofocus
-                   class="w-full px-3.5 py-2.5 text-sm text-slate-900 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all @error('email') border-red-300 bg-red-50 @enderror"
+                   class="w-full px-3.5 py-2.5 text-sm rounded-xl transition-all @error('email') border-red-300 bg-red-50 @enderror"
+                   style="color: #1C1C1E; border: 1px solid #E0E0E0; background: #F7F6F2; outline: none;"
+                   onfocus="this.style.borderColor='#1A6B5A'; this.style.boxShadow='0 0 0 3px rgba(26,107,90,0.12)'; this.style.background='#fff';"
+                   onblur="this.style.borderColor='#E0E0E0'; this.style.boxShadow='none'; this.style.background='#F7F6F2';"
                    placeholder="you@example.com">
         </div>
 
         <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Password</label>
+            <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #6B6B70;">Password</label>
             <input type="password" name="password" required
-                   class="w-full px-3.5 py-2.5 text-sm text-slate-900 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                   class="w-full px-3.5 py-2.5 text-sm rounded-xl transition-all"
+                   style="color: #1C1C1E; border: 1px solid #E0E0E0; background: #F7F6F2; outline: none;"
+                   onfocus="this.style.borderColor='#1A6B5A'; this.style.boxShadow='0 0 0 3px rgba(26,107,90,0.12)'; this.style.background='#fff';"
+                   onblur="this.style.borderColor='#E0E0E0'; this.style.boxShadow='none'; this.style.background='#F7F6F2';"
                    placeholder="••••••••">
         </div>
 
         <button type="submit"
-                class="w-full bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white text-sm font-semibold py-2.5 rounded-xl transition-all shadow-sm mt-2">
+                class="w-full text-white text-sm font-semibold py-2.5 rounded-xl shadow-sm mt-2 transition-opacity hover:opacity-90 active:opacity-80"
+                style="background: linear-gradient(135deg, #0D4A3E 0%, #1A6B5A 50%, #14B8A6 100%);">
             Sign in
         </button>
     </form>
 
-    <p class="mt-6 text-center text-sm text-slate-500">
+    <p class="mt-6 text-center text-sm" style="color: #6B6B70;">
         Don't have an account?
-        <a href="{{ route('register') }}" class="text-teal-600 font-semibold hover:text-teal-700">Register</a>
+        <a href="{{ route('register') }}" class="font-semibold hover:opacity-80 transition-opacity" style="color: #1A6B5A;">Register</a>
     </p>
 
     <!-- Demo accounts -->
-    <div class="mt-8 p-4 bg-slate-50 rounded-xl border border-slate-200">
-        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Demo accounts</p>
+    <div class="mt-8 p-4 rounded-xl" style="background: #F7F6F2; border: 1px solid #E8EFED;">
+        <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color: #9AA3B2;">Demo accounts</p>
         <div class="space-y-2">
-            <button type="button" onclick="fillCreds('test@example.com')"
-                    class="w-full flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded-lg hover:border-teal-300 hover:bg-teal-50 transition-all cursor-pointer text-left">
+            <!-- Admin -->
+            <button type="button" onclick="fillCreds('admin@servicehub.test')"
+                    class="w-full flex items-center justify-between px-3 py-2 bg-white rounded-lg cursor-pointer text-left transition-all"
+                    style="border: 1px solid #E0E0E0;"
+                    onmouseover="this.style.borderColor='#F5C842'; this.style.background='#FFFBEB';"
+                    onmouseout="this.style.borderColor='#E0E0E0'; this.style.background='white';">
                 <div>
-                    <div class="text-xs font-medium text-slate-700">test@example.com</div>
-                    <div class="text-[11px] text-slate-400 mt-0.5">Customer account</div>
+                    <div class="text-xs font-medium" style="color: #1C1C1E;">admin@servicehub.test</div>
+                    <div class="text-[11px] mt-0.5" style="color: #9AA3B2;">Full platform control</div>
                 </div>
-                <span class="text-[10px] font-medium px-2 py-0.5 bg-teal-100 text-teal-700 rounded-full">User</span>
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background: #FEF9C3; color: #92400E;">Admin</span>
             </button>
-            <button type="button" onclick="fillCreds('ali-ac-services@provider.test')"
-                    class="w-full flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded-lg hover:border-violet-300 hover:bg-violet-50 transition-all cursor-pointer text-left">
+            <!-- User -->
+            <button type="button" onclick="fillCreds('test@example.com')"
+                    class="w-full flex items-center justify-between px-3 py-2 bg-white rounded-lg cursor-pointer text-left transition-all"
+                    style="border: 1px solid #E0E0E0;"
+                    onmouseover="this.style.borderColor='#1A6B5A'; this.style.background='#D5F5F0';"
+                    onmouseout="this.style.borderColor='#E0E0E0'; this.style.background='white';">
                 <div>
-                    <div class="text-xs font-medium text-slate-700">ali-ac-services@provider.test</div>
-                    <div class="text-[11px] text-slate-400 mt-0.5">Ali AC Services · ⭐ 4.8</div>
+                    <div class="text-xs font-medium" style="color: #1C1C1E;">test@example.com</div>
+                    <div class="text-[11px] mt-0.5" style="color: #9AA3B2;">Customer account</div>
                 </div>
-                <span class="text-[10px] font-medium px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full">Provider</span>
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background: #D5F5F0; color: #0D4A3E;">User</span>
             </button>
         </div>
-        <p class="text-[11px] text-slate-400 mt-2 text-center">Password: <code class="font-mono">password</code></p>
+        <p class="text-[11px] mt-2 text-center" style="color: #9AA3B2;">Password: <code class="font-mono">password</code></p>
     </div>
 </div>
 
