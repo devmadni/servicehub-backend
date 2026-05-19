@@ -11,9 +11,11 @@ use Illuminate\Support\Facades\Http;
 
 class ProviderMatchingService
 {
+    public function __construct(private GooglePlacesService $places) {}
+
     public function rank(array $intent, float $lat, float $lng, ?User $user = null): array
     {
-        $providers = $this->filterByComplexity($intent['complexity'] ?? 'basic', $intent['service_type'] ?? '');
+        $providers = $this->filterByComplexity($intent['complexity'] ?? 'basic', $intent['service_type'] ?? '', $lat, $lng);
 
         $scored = $providers->map(function (Provider $p) use ($lat, $lng, $intent) {
             return [
@@ -39,8 +41,12 @@ class ProviderMatchingService
         })->toArray();
     }
 
-    public function filterByComplexity(string $complexity, string $serviceType = ''): Collection
+    public function filterByComplexity(string $complexity, string $serviceType = '', float $lat = 0.0, float $lng = 0.0): Collection
     {
+        if ($serviceType !== '' && ($lat !== 0.0 || $lng !== 0.0)) {
+            $this->places->searchAndUpsert($serviceType, $lat, $lng);
+        }
+
         $minExperience = match ($complexity) {
             'complex' => 5,
             'intermediate' => 2,

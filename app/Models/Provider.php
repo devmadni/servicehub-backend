@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\ProviderFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,14 +10,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Provider extends Model
 {
-    /** @use HasFactory<\Database\Factories\ProviderFactory> */
+    /** @use HasFactory<ProviderFactory> */
     use HasFactory;
 
     protected $fillable = [
         'user_id', 'category_id', 'name', 'area', 'lat', 'lng',
         'rating_avg', 'on_time_score', 'cancel_rate', 'experience_years',
         'specializations', 'capacity_current', 'risk_score', 'price_min',
-        'status', 'warning_count',
+        'status', 'warning_count', 'place_id', 'google_maps_url',
     ];
 
     protected function casts(): array
