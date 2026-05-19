@@ -8,14 +8,21 @@ use App\Http\Requests\StoreBookingRequest;
 use App\Http\Resources\BookingResource;
 use App\Models\Booking;
 use App\Models\ServiceRequest;
+use App\Services\AgentTraceService;
 use App\Services\BookingSimulatorService;
+use App\Services\FollowUpService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
 class BookingController extends Controller
 {
     use ApiResponse;
-    public function __construct(private BookingSimulatorService $simulator) {}
+
+    public function __construct(
+        private BookingSimulatorService $simulator,
+        private FollowUpService $followUp,
+        private AgentTraceService $agentTrace
+    ) {}
 
     public function index(): JsonResponse
     {
@@ -41,7 +48,7 @@ class BookingController extends Controller
             return $this->conflict($e->getMessage());
         }
 
-        return $this->created([
+        $response = [
             'id' => $booking->id,
             'booking_ref' => $booking->booking_ref,
             'status' => $booking->status,
@@ -51,7 +58,40 @@ class BookingController extends Controller
                 'slot_'.$booking->slot_datetime->format('Hi') => 'RESERVED',
                 'booking_ref' => $booking->booking_ref,
             ],
-        ], 'Booking created');
+        ];
+
+        if ($request->boolean('auto_confirm')) {
+            $confirmResult = $this->simulator->confirm($booking);
+            $booking = $confirmResult['booking'];
+
+            $schedule = $this->followUp->schedule($booking);
+
+            $this->agentTrace->log(
+                $serviceRequest->agent_run_id ?? $booking->agent_run_id,
+                'followup',
+                5,
+                ['booking_id' => $booking->id],
+                $schedule,
+                'Follow-up schedule created with 3 notification events in Urdu and English.',
+                0.97,
+                0
+            );
+
+            $response = array_merge($response, [
+                'status' => $booking->status,
+                'confirmed_at' => $booking->confirmed_at,
+                'after_state' => $confirmResult['after_state'],
+                'sms_payload' => $confirmResult['sms_payload'],
+                'receipt' => $confirmResult['receipt'],
+                'followup_schedule' => $schedule,
+            ]);
+        }
+
+        $message = $request->boolean('auto_confirm')
+            ? 'Booking created, confirmed, and follow-up scheduled'
+            : 'Booking created';
+
+        return $this->created($response, $message);
     }
 
     public function show(Booking $booking): JsonResponse

@@ -31,7 +31,7 @@ class ServiceRequestController extends Controller
             $request->lng
         );
 
-        $durationMs = now()->diffInMilliseconds($start);
+        $durationMs = (int) abs($start->diffInMilliseconds(now()));
 
         if (! ($result['proceed'] ?? false)) {
             return $this->success([

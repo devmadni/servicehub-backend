@@ -9,7 +9,9 @@
       "Bash(Get-ChildItem -Path \"C:\\\\xampp\\\\htdocs\\\\ai-service-hackhathon\" -Force)",
       "Bash(Select-Object Name, Mode)",
       "Bash(curl *)",
-      "Bash(php -r ' *)"
+      "Bash(php -r ' *)",
+      "WebSearch",
+      "Bash(git stash *)"
     ]
   }
 }

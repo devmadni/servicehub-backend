@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreBookingRequest extends FormRequest
@@ -22,6 +21,7 @@ class StoreBookingRequest extends FormRequest
             'service_request_id' => 'required|integer|exists:service_requests,id',
             'pricing_quote_id' => 'nullable|integer|exists:pricing_quotes,id',
             'slot_datetime' => 'required|date|after:now',
+            'auto_confirm' => 'sometimes|boolean',
         ];
     }
 }

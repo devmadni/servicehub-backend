@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\DisputeController;
 use App\Http\Controllers\Api\FollowUpController;
+use App\Http\Controllers\Api\OrchestrateController;
 use App\Http\Controllers\Api\PricingController;
 use App\Http\Controllers\Api\ProviderController;
 use App\Http\Controllers\Api\ServiceRequestController;
@@ -24,17 +25,15 @@ Route::prefix('auth')->group(function () {
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('v1')->group(function () {
 
     Route::middleware('throttle:10,1')->group(function () {
-        Route::post('service-requests', [ServiceRequestController::class, 'store']);
+        Route::post('orchestrate', [OrchestrateController::class, 'store']);
     });
 
     Route::get('service-requests', [ServiceRequestController::class, 'index']);
     Route::get('service-requests/{id}', [ServiceRequestController::class, 'show']);
 
-    Route::get('providers', [ProviderController::class, 'nearby']);
     Route::get('providers/{provider}', [ProviderController::class, 'show']);
     Route::get('providers/{provider}/availability', [ProviderController::class, 'availability']);
 
-    Route::post('pricing/quote', [PricingController::class, 'quote']);
     Route::get('pricing/quote/{pricingQuote}', [PricingController::class, 'show']);
 
     Route::get('bookings', [BookingController::class, 'index']);

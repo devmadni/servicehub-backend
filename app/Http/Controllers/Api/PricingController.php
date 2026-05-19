@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
 class PricingController extends Controller
 {
     use ApiResponse;
+
     public function __construct(
         private PricingEngine $pricing,
         private AgentTraceService $agentTrace
@@ -61,7 +62,7 @@ class PricingController extends Controller
             ['total' => $quoteData['total'], 'surge' => $quoteData['surge_factor']],
             "Quote generated. Surge: {$quoteData['surge_factor']}x. Loyalty discount: PKR {$quoteData['loyalty_discount']}.",
             0.98,
-            now()->diffInMilliseconds($start)
+            (int) abs($start->diffInMilliseconds(now()))
         );
 
         return $this->success([

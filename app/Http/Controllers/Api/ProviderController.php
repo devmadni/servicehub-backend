@@ -50,7 +50,7 @@ class ProviderController extends Controller
             ['ranked_count' => count($ranked)],
             'Providers ranked by distance. Top 5 nearest returned with slots and pricing.',
             0.95,
-            now()->diffInMilliseconds($start)
+            (int) abs($start->diffInMilliseconds(now()))
         );
 
         return $this->success([
