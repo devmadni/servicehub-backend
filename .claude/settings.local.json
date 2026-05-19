@@ -5,7 +5,9 @@
       "PowerShell(New-Item *)",
       "Bash(vendor/bin/pint *)",
       "Bash(npm run *)",
-      "Bash(php artisan *)"
+      "Bash(php artisan *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\xampp\\\\htdocs\\\\ai-service-hackhathon\" -Force)",
+      "Bash(Select-Object Name, Mode)"
     ]
   }
 }
