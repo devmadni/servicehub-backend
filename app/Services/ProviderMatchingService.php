@@ -2,38 +2,44 @@
 
 namespace App\Services;
 
+use App\Models\Booking;
+use App\Models\Category;
 use App\Models\Provider;
+use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 
 class ProviderMatchingService
 {
-    public function rank(array $intent, float $lat, float $lng): array
+    public function rank(array $intent, float $lat, float $lng, ?User $user = null): array
     {
-        $providers = $this->filterByComplexity($intent['complexity'] ?? 'basic');
+        $providers = $this->filterByComplexity($intent['complexity'] ?? 'basic', $intent['service_type'] ?? '');
 
         $scored = $providers->map(function (Provider $p) use ($lat, $lng, $intent) {
             return [
                 'provider' => $p,
                 'score' => $this->score($p, $lat, $lng, $intent),
+                'distance_km' => $this->haversineKm($lat, $lng, $p->lat, $p->lng),
                 'travel_time_min' => $this->getTravelTime($lat, $lng, $p),
             ];
-        })->sortByDesc('score')->take(3)->values();
+        })->sortBy('distance_km')->take(5)->values();
 
-        return $scored->map(function ($item) use ($lat, $lng, $intent) {
+        return $scored->map(function ($item) use ($lat, $lng, $intent, $user) {
             $p = $item['provider'];
             $scores = $this->getFactorScores($p, $lat, $lng, $intent);
 
             return array_merge($p->toArray(), [
-                'match_score' => $item['score'],
+                'score' => $item['score'],
                 'travel_time_min' => $item['travel_time_min'],
-                'distance_km' => round($this->haversineKm($lat, $lng, $p->lat, $p->lng), 1),
-                'reasoning' => $this->buildReasoning($p, $scores),
+                'distance_km' => round($item['distance_km'], 1),
+                'reason' => $this->buildReasoning($p, $scores),
+                'available_slots' => $this->getAvailableSlots($p),
+                'pricing' => $this->estimatePricing($p, $intent, $user),
             ]);
         })->toArray();
     }
 
-    public function filterByComplexity(string $complexity): Collection
+    public function filterByComplexity(string $complexity, string $serviceType = ''): Collection
     {
         $minExperience = match ($complexity) {
             'complex' => 5,
@@ -41,9 +47,20 @@ class ProviderMatchingService
             default => 0,
         };
 
-        return Provider::where('status', 'active')
-            ->where('experience_years', '>=', $minExperience)
-            ->get();
+        $query = Provider::with('category')
+            ->where('status', 'active')
+            ->where('experience_years', '>=', $minExperience);
+
+        if ($serviceType !== '') {
+            $categoryId = Category::whereRaw('LOWER(name) LIKE ?', ['%'.strtolower($serviceType).'%'])
+                ->value('id');
+
+            if ($categoryId) {
+                $query->where('category_id', $categoryId);
+            }
+        }
+
+        return $query->get();
     }
 
     public function score(Provider $p, float $lat, float $lng, array $intent): float
@@ -144,6 +161,60 @@ class ProviderMatchingService
         }
 
         return 0.3;
+    }
+
+    private function getAvailableSlots(Provider $p): array
+    {
+        $bookedSlots = Booking::where('provider_id', $p->id)
+            ->whereIn('status', ['pending', 'confirmed', 'en_route'])
+            ->where('slot_datetime', '>=', now())
+            ->where('slot_datetime', '<=', now()->addDays(3))
+            ->pluck('slot_datetime')
+            ->map(fn ($dt) => $dt->toDateTimeString());
+
+        $slots = [];
+        $cursor = now()->startOfHour()->addHour();
+        $end = now()->addDays(3);
+
+        while ($cursor <= $end && count($slots) < 5) {
+            if ($cursor->isWeekday() && $cursor->hour >= 8 && $cursor->hour <= 20) {
+                $slotStr = $cursor->toDateTimeString();
+                if (! $bookedSlots->contains($slotStr)) {
+                    $slots[] = [
+                        'datetime' => $slotStr,
+                        'label' => $cursor->format('D, M j g:i A'),
+                    ];
+                }
+            }
+            $cursor->addHours(2);
+        }
+
+        return $slots;
+    }
+
+    private function estimatePricing(Provider $p, array $intent, ?User $user): array
+    {
+        $base = $p->price_min;
+        $visitFee = 150;
+        $urgencyAdj = match ($intent['urgency'] ?? 'normal') {
+            'emergency' => 500,
+            'high' => 200,
+            'low' => -50,
+            default => 0,
+        };
+        $surge = $p->capacity_current > 8 ? 1.15 : 1.00;
+        $subtotal = (int) (($base + $visitFee + $urgencyAdj) * $surge);
+        $loyaltyDiscount = ($user && ($user->booking_count ?? 0) >= 3) ? (int) ($subtotal * 0.05) : 0;
+
+        return [
+            'base_rate' => $base,
+            'visit_fee' => $visitFee,
+            'urgency_adj' => $urgencyAdj,
+            'surge_factor' => $surge,
+            'loyalty_discount' => $loyaltyDiscount,
+            'estimated_total' => $subtotal - $loyaltyDiscount,
+            'currency' => 'PKR',
+        ];
     }
 
     private function haversineKm(float $lat1, float $lng1, float $lat2, float $lng2): float

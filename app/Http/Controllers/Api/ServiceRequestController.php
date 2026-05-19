@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreServiceRequestRequest;
-use App\Http\Resources\ServiceRequestResource;
 use App\Models\ServiceRequest;
-use App\Services\IntentParserService;
 use App\Services\AgentTraceService;
+use App\Services\IntentParserService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
@@ -15,6 +14,7 @@ use Illuminate\Support\Str;
 class ServiceRequestController extends Controller
 {
     use ApiResponse;
+
     public function __construct(
         private IntentParserService $intentParser,
         private AgentTraceService $agentTrace
@@ -49,12 +49,12 @@ class ServiceRequestController extends Controller
             'location' => $result['location'] ?? null,
             'user_lat' => $request->lat,
             'user_lng' => $request->lng,
-            'urgency' => $result['urgency'] ?? 'normal',
-            'budget_sensitivity' => $result['budget_sensitivity'] ?? 'normal',
+            'urgency' => in_array($result['urgency'] ?? '', ['low', 'normal', 'high', 'emergency']) ? $result['urgency'] : 'normal',
+            'budget_sensitivity' => in_array($result['budget_sensitivity'] ?? '', ['normal', 'high']) ? $result['budget_sensitivity'] : 'normal',
             'requested_datetime' => $result['preferred_time'] ?? null,
-            'issue_severity' => $result['issue_severity'] ?? 'low',
+            'issue_severity' => in_array($result['issue_severity'] ?? '', ['low', 'medium', 'high']) ? $result['issue_severity'] : 'low',
             'confidence' => $result['confidence'] ?? 0,
-            'complexity' => $result['complexity'] ?? 'basic',
+            'complexity' => in_array($result['complexity'] ?? '', ['basic', 'intermediate', 'complex']) ? $result['complexity'] : 'basic',
             'agent_run_id' => $runId,
         ]);
 
@@ -93,9 +93,11 @@ class ServiceRequestController extends Controller
         return $this->paginated($requests);
     }
 
-    public function show(int $id): JsonResponse
+    public function show(string $id): JsonResponse
     {
-        $serviceRequest = ServiceRequest::where('user_id', auth()->id())->findOrFail($id);
+        abort_if(! is_numeric($id), 404);
+
+        $serviceRequest = ServiceRequest::where('user_id', auth()->id())->findOrFail((int) $id);
 
         return $this->success($serviceRequest);
     }

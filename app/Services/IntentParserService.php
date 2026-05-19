@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class IntentParserService
 {
@@ -17,9 +18,32 @@ class IntentParserService
                 'generationConfig' => ['temperature' => 0.1, 'maxOutputTokens' => 512],
             ]);
 
+        if (! $response->successful()) {
+            Log::error('Gemini API error', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return [
+                'clarification_question' => 'Could you please rephrase your request?',
+                'proceed' => false,
+                'duration_ms' => now()->diffInMilliseconds($start),
+            ];
+        }
+
         $text = $response->json('candidates.0.content.parts.0.text');
         $text = preg_replace('/```json|```/', '', $text ?? '');
         $data = json_decode(trim($text), true) ?? [];
+
+        if (empty($data)) {
+            Log::error('Gemini response unparseable', ['raw' => $text]);
+
+            return [
+                'clarification_question' => 'Could you please rephrase your request?',
+                'proceed' => false,
+                'duration_ms' => now()->diffInMilliseconds($start),
+            ];
+        }
 
         if (($data['confidence'] ?? 1) < 0.75) {
             return [
