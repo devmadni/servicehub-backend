@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem \"C:\\\\xampp\\\\htdocs\\\\ai-service-hackhathon\\\\database\\\\migrations\" | ForEach-Object { $_.Name })",
+      "PowerShell(New-Item *)",
+      "Bash(vendor/bin/pint *)",
+      "Bash(npm run *)",
+      "Bash(php artisan *)"
+    ]
+  }
+}
